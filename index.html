@@ -1,0 +1,1264 @@
+<!DOCTYPE html>
+<html lang="zh-Hant" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="referrer" content="no-referrer" />
+  <title>鋼鐵機甲戰隊 // 機動戰士陣營圖鑑與戰力比較系統</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&family=Orbitron:wght@500;700;900&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Noto Sans TC"', 'system-ui', 'sans-serif'],
+            tech: ['"Orbitron"', '"Noto Sans TC"', 'monospace'],
+          },
+          colors: {
+            hud: {
+              bg: '#060a13',
+              panel: '#0d1526',
+              border: '#1e293b',
+              cyan: '#38bdf8',
+              crimson: '#f43f5e',
+              emerald: '#10b981',
+              amber: '#f59e0b'
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body {
+      background-color: #060a13;
+      color: #e2e8f0;
+      background-image:
+        linear-gradient(rgba(56, 189, 248, 0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(56, 189, 248, 0.03) 1px, transparent 1px);
+      background-size: 36px 36px;
+    }
+
+    .hud-card {
+      background: linear-gradient(145deg, rgba(15, 23, 42, 0.92), rgba(9, 14, 28, 0.96));
+      border: 1px solid rgba(56, 189, 248, 0.18);
+      box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.7);
+      transition: transform 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
+    }
+
+    .hud-card:hover {
+      transform: translateY(-4px);
+      border-color: rgba(56, 189, 248, 0.5);
+      box-shadow: 0 15px 35px -10px rgba(56, 189, 248, 0.2);
+    }
+
+    .chamfer-box {
+      clip-path: polygon(0 0, calc(100% - 14px) 0, 100% 14px, 100% 100%, 14px 100%, 0 calc(100% - 14px));
+    }
+
+    .scanline {
+      background: repeating-linear-gradient(
+        0deg,
+        rgba(255, 255, 255, 0.015),
+        rgba(255, 255, 255, 0.015) 1px,
+        transparent 1px,
+        transparent 3px
+      );
+    }
+
+    .model-stage {
+      background: radial-gradient(circle at 50% 45%, #ffffff 0%, #f1f5f9 65%, #cbd5e1 100%);
+    }
+
+    /* Custom Scrollbar */
+    ::-webkit-scrollbar { width: 8px; height: 8px; }
+    ::-webkit-scrollbar-track { background: #060a13; }
+    ::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: #38bdf8; }
+  </style>
+</head>
+<body class="font-sans antialiased selection:bg-sky-500/30 selection:text-sky-200">
+
+  <!-- 頂部導覽列 -->
+  <header class="sticky top-0 z-40 border-b border-sky-500/20 bg-[#060a13]/90 backdrop-blur-md">
+    <div class="mx-auto flex max-w-7xl items-center justify-between px-4 py-3 sm:px-6">
+      <a href="#" class="flex items-center gap-3 group">
+        <div class="flex h-10 w-10 items-center justify-center rounded-lg border border-sky-400/40 bg-sky-500/10 text-sky-400 shadow-[0_0_15px_rgba(56,189,248,0.25)] group-hover:bg-sky-500/20 transition">
+          <svg class="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+            <path d="M12 2L4 7v6c0 5 3.5 8.5 8 9 4.5-.5 8-4 8-9V7l-8-5z" />
+            <path d="M12 7v10M8.5 10.5L12 7l3.5 3.5" />
+          </svg>
+        </div>
+        <div>
+          <div class="font-tech text-lg font-black tracking-wider text-white sm:text-xl">
+            鋼鐵機甲戰隊
+          </div>
+          <div class="font-tech text-[10px] tracking-[0.2em] text-sky-400 uppercase">
+            STEEL MECHA SQUADRON // TACTICAL DB
+          </div>
+        </div>
+      </a>
+
+      <nav class="hidden items-center gap-6 text-sm font-medium md:flex">
+        <a href="#roster" class="text-slate-300 hover:text-sky-400 transition">陣營機體圖鑑</a>
+        <a href="#faction-analysis" class="text-slate-300 hover:text-sky-400 transition">戰力分析與評估</a>
+        <a href="#compare-arena" class="flex items-center gap-1.5 rounded-full border border-amber-400/40 bg-amber-500/10 px-4 py-1.5 text-amber-300 hover:bg-amber-500/20 transition">
+          <span class="h-2 w-2 rounded-full bg-amber-400 animate-pulse"></span>
+          鋼彈二二比較 (VS)
+        </a>
+      </nav>
+
+      <div class="flex items-center gap-2">
+        <a href="#compare-arena" class="md:hidden rounded-lg border border-amber-400/40 bg-amber-500/10 px-3 py-1.5 text-xs font-bold text-amber-300">
+          1v1 比較
+        </a>
+        <span class="hidden sm:inline-flex items-center gap-1.5 rounded border border-slate-700 bg-slate-900/80 px-2.5 py-1 font-tech text-xs text-slate-400">
+          <span class="h-1.5 w-1.5 rounded-full bg-emerald-400"></span>
+          ONLINE // 12 UNITS
+        </span>
+      </div>
+    </div>
+  </header>
+
+  <!-- Hero 戰術主視覺 -->
+  <section class="relative overflow-hidden border-b border-slate-800/80 py-12 sm:py-16">
+    <div class="pointer-events-none absolute inset-0 scanline"></div>
+    <div class="pointer-events-none absolute -top-24 left-1/2 h-96 w-[600px] -translate-x-1/2 rounded-full bg-sky-500/10 blur-[120px]"></div>
+
+    <div class="relative mx-auto max-w-7xl px-4 sm:px-6">
+      <div class="grid items-center gap-8 lg:grid-cols-12">
+        <div class="lg:col-span-7">
+          <div class="mb-4 inline-flex items-center gap-2 rounded-full border border-sky-400/30 bg-sky-500/10 px-3.5 py-1 text-xs font-bold tracking-wider text-sky-300">
+            <span class="font-tech">SYSTEM v2.5</span>
+            <span>|</span>
+            <span>多陣營機動戰士戰術評估終端</span>
+          </div>
+          <h1 class="text-3xl font-black tracking-tight text-white sm:text-5xl lg:leading-tight">
+            鋼鐵機甲戰隊<br />
+            <span class="bg-gradient-to-r from-sky-400 via-cyan-300 to-indigo-400 bg-clip-text text-transparent">
+              陣營戰力解析 ＆ 機體二二對決
+            </span>
+          </h1>
+          <p class="mt-4 max-w-2xl text-sm leading-relaxed text-slate-300 sm:text-base">
+            完整收錄「地球聯邦軍」、「吉翁公國軍／新吉翁」與「奧古／獨立武裝勢力」三大陣營代表性鋼彈模型檔案。
+            結合六維雷達圖戰力評估與全新開發的「二二模擬比較引擎」，即時透視每台機體的火力、裝甲與戰術優勢。
+          </p>
+
+          <div class="mt-7 flex flex-wrap gap-3">
+            <a href="#roster" class="chamfer-box inline-flex items-center gap-2 bg-sky-500 px-6 py-3 text-sm font-bold text-slate-950 hover:bg-sky-400 transition shadow-[0_0_20px_rgba(56,189,248,0.35)]">
+              <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h10"/></svg>
+              瀏覽陣營機體庫
+            </a>
+            <a href="#compare-arena" class="chamfer-box inline-flex items-center gap-2 border border-amber-400/50 bg-amber-500/15 px-6 py-3 text-sm font-bold text-amber-300 hover:bg-amber-500/25 transition">
+              <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+              啟動 1v1 二二比較
+            </a>
+          </div>
+        </div>
+
+        <!-- 陣營快速統計卡片 -->
+        <div class="grid grid-cols-1 gap-3 sm:grid-cols-3 lg:col-span-5 lg:grid-cols-1">
+          <div onclick="filterByFaction('EFSF')" class="cursor-pointer rounded-xl border border-sky-500/30 bg-sky-950/25 p-4 hover:border-sky-400 transition">
+            <div class="flex items-center justify-between">
+              <span class="font-tech text-xs font-bold tracking-widest text-sky-400">E.F.S.F.</span>
+              <span class="rounded bg-sky-500/20 px-2 py-0.5 text-xs font-bold text-sky-300">4 機體</span>
+            </div>
+            <div class="mt-1 text-lg font-black text-white">地球聯邦軍</div>
+            <p class="mt-0.5 text-xs text-slate-400">泛用平衡與光束兵器先驅，RX 系列與隆德・貝爾主力</p>
+          </div>
+
+          <div onclick="filterByFaction('ZEON')" class="cursor-pointer rounded-xl border border-rose-500/30 bg-rose-950/25 p-4 hover:border-rose-400 transition">
+            <div class="flex items-center justify-between">
+              <span class="font-tech text-xs font-bold tracking-widest text-rose-400">ZEON / NEO ZEON</span>
+              <span class="rounded bg-rose-500/20 px-2 py-0.5 text-xs font-bold text-rose-300">4 機體</span>
+            </div>
+            <div class="mt-1 text-lg font-black text-white">吉翁公國軍／新吉翁</div>
+            <p class="mt-0.5 text-xs text-slate-400">高推力與精神感應武裝，紅彗星與帶袖的王牌座機</p>
+          </div>
+
+          <div onclick="filterByFaction('INDEP')" class="cursor-pointer rounded-xl border border-emerald-500/30 bg-emerald-950/25 p-4 hover:border-emerald-400 transition">
+            <div class="flex items-center justify-between">
+              <span class="font-tech text-xs font-bold tracking-widest text-emerald-400">A.E.U.G. / INDEPENDENT</span>
+              <span class="rounded bg-emerald-500/20 px-2 py-0.5 text-xs font-bold text-emerald-300">4 機體</span>
+            </div>
+            <div class="mt-1 text-lg font-black text-white">奧古／獨立武裝勢力</div>
+            <p class="mt-0.5 text-xs text-slate-400">可變機構、GN 粒子與雙重破壞來福槍等特化高戰力機體</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 區塊一：陣營分類與模型圖鑑 -->
+  <section id="roster" class="mx-auto max-w-7xl px-4 py-12 sm:px-6">
+    <div class="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+      <div>
+        <div class="font-tech text-xs font-bold tracking-[0.2em] text-sky-400 uppercase">MOBILE SUIT HANGAR</div>
+        <h2 class="mt-1 text-2xl font-black text-white sm:text-3xl">陣營機體圖鑑與模型展示</h2>
+      </div>
+
+      <!-- 搜尋與排序 -->
+      <div class="flex flex-wrap items-center gap-2.5">
+        <div class="relative">
+          <input id="search-input" type="text" placeholder="搜尋機體名稱 / 型號 / 駕駛..."
+            class="w-60 rounded-lg border border-slate-700 bg-slate-900/90 py-2 pl-9 pr-3 text-sm text-white placeholder-slate-500 focus:border-sky-400 focus:outline-none" />
+          <svg class="absolute left-3 top-2.5 h-4 w-4 text-slate-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/>
+          </svg>
+        </div>
+
+        <select id="sort-select" class="rounded-lg border border-slate-700 bg-slate-900/90 px-3 py-2 text-sm text-slate-200 focus:border-sky-400 focus:outline-none">
+          <option value="default">預設排列</option>
+          <option value="overall">綜合戰力：高 → 低</option>
+          <option value="firepower">火力輸出：高 → 低</option>
+          <option value="mobility">機動敏捷：高 → 低</option>
+          <option value="armor">裝甲防禦：高 → 低</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- 陣營篩選分頁按鈕 -->
+    <div class="mt-6 flex flex-wrap gap-2" id="faction-tabs">
+      <button data-faction="ALL" class="faction-tab active rounded-lg border border-sky-400 bg-sky-500/20 px-4 py-2 text-sm font-bold text-sky-300 transition">
+        全部勢力 (12)
+      </button>
+      <button data-faction="EFSF" class="faction-tab rounded-lg border border-slate-700 bg-slate-900/80 px-4 py-2 text-sm font-bold text-slate-300 hover:border-sky-400/60 hover:text-sky-300 transition">
+        地球聯邦軍 E.F.S.F. (4)
+      </button>
+      <button data-faction="ZEON" class="faction-tab rounded-lg border border-slate-700 bg-slate-900/80 px-4 py-2 text-sm font-bold text-slate-300 hover:border-rose-400/60 hover:text-rose-300 transition">
+        吉翁公國軍／新吉翁 (4)
+      </button>
+      <button data-faction="INDEP" class="faction-tab rounded-lg border border-slate-700 bg-slate-900/80 px-4 py-2 text-sm font-bold text-slate-300 hover:border-emerald-400/60 hover:text-emerald-300 transition">
+        奧古／獨立勢力 (4)
+      </button>
+    </div>
+
+    <!-- 機體卡片網格 -->
+    <div id="ms-grid" class="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+      <!-- 由 JS 動態渲染 -->
+    </div>
+  </section>
+
+  <!-- 區塊二：保留原本的「戰力分析與評估」陣營總覽 -->
+  <section id="faction-analysis" class="border-y border-slate-800/80 bg-[#080d1a]/80 py-14">
+    <div class="mx-auto max-w-7xl px-4 sm:px-6">
+      <div class="mb-8">
+        <div class="font-tech text-xs font-bold tracking-[0.2em] text-sky-400 uppercase">COMBAT POWER EVALUATION</div>
+        <h2 class="mt-1 text-2xl font-black text-white sm:text-3xl">各陣營整體戰力分析與評估</h2>
+        <p class="mt-2 text-sm text-slate-400">
+          依據收錄機體之六維性能平均值，評估三大勢力在火力、防禦、機動性與特化戰術上的整體戰力分布（點擊下方卡片「戰力詳情」可檢視單機完整雷達圖與點評）。
+        </p>
+      </div>
+
+      <div id="faction-summary-grid" class="grid gap-6 lg:grid-cols-3">
+        <!-- 由 JS 動態產生三大陣營戰力評估卡 -->
+      </div>
+    </div>
+  </section>
+
+  <!-- 區塊三：鋼彈間二二比較 (1v1 Comparison Arena) -->
+  <section id="compare-arena" class="mx-auto max-w-7xl px-4 py-14 sm:px-6">
+    <div class="mb-8 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+      <div>
+        <div class="font-tech text-xs font-bold tracking-[0.2em] text-amber-400 uppercase">1v1 TACTICAL SIMULATION</div>
+        <h2 class="mt-1 text-2xl font-black text-white sm:text-3xl">鋼彈間二二戰力比較系統</h2>
+        <p class="mt-1 text-sm text-slate-400">自由選擇左、右兩架機體，進行跨陣營或同陣營的六維性能疊加比對與模擬勝負評估。</p>
+      </div>
+      <div class="flex items-center gap-2">
+        <button id="btn-swap-units" class="inline-flex items-center gap-1.5 rounded-lg border border-slate-700 bg-slate-900 px-3.5 py-2 text-xs font-bold text-slate-200 hover:border-sky-400 hover:text-sky-300 transition">
+          ⇄ 交換機體
+        </button>
+        <button id="btn-random-duel" class="inline-flex items-center gap-1.5 rounded-lg border border-amber-400/50 bg-amber-500/15 px-3.5 py-2 text-xs font-bold text-amber-300 hover:bg-amber-500/25 transition">
+          ⚡ 隨機宿命對決
+        </button>
+      </div>
+    </div>
+
+    <!-- 對決主控台 -->
+    <div class="hud-card rounded-2xl p-4 sm:p-6">
+      <!-- 機體選擇列 -->
+      <div class="grid items-center gap-4 md:grid-cols-11">
+        <div class="md:col-span-5">
+          <label class="mb-1.5 block font-tech text-xs font-bold tracking-wider text-sky-400">UNIT A // 藍方參戰機體</label>
+          <select id="compare-select-a" class="w-full rounded-xl border border-sky-500/40 bg-slate-900 px-4 py-3 text-sm font-bold text-white focus:border-sky-400 focus:outline-none">
+          </select>
+        </div>
+
+        <div class="flex justify-center md:col-span-1">
+          <div class="flex h-12 w-12 items-center justify-center rounded-full border border-amber-400/50 bg-amber-500/15 font-tech text-base font-black text-amber-400 shadow-[0_0_20px_rgba(245,158,11,0.25)]">
+            VS
+          </div>
+        </div>
+
+        <div class="md:col-span-5">
+          <label class="mb-1.5 block font-tech text-xs font-bold tracking-wider text-rose-400">UNIT B // 紅方參戰機體</label>
+          <select id="compare-select-b" class="w-full rounded-xl border border-rose-500/40 bg-slate-900 px-4 py-3 text-sm font-bold text-white focus:border-rose-400 focus:outline-none">
+          </select>
+        </div>
+      </div>
+
+      <!-- 雙機資訊對比 + 雙層雷達圖 -->
+      <div class="mt-8 grid gap-6 lg:grid-cols-12">
+        <!-- Unit A Card -->
+        <div id="compare-card-a" class="lg:col-span-4"></div>
+
+        <!-- 疊加雷達圖與模擬勝率 -->
+        <div class="flex flex-col items-center justify-center rounded-xl border border-slate-800 bg-slate-950/70 p-4 lg:col-span-4">
+          <div class="mb-2 flex items-center gap-4 text-xs font-bold">
+            <span class="flex items-center gap-1.5 text-sky-400">
+              <span class="h-3 w-3 rounded-sm bg-sky-400/60 border border-sky-400"></span>
+              <span id="legend-a-name">機體 A</span>
+            </span>
+            <span class="flex items-center gap-1.5 text-rose-400">
+              <span class="h-3 w-3 rounded-sm bg-rose-400/60 border border-rose-400"></span>
+              <span id="legend-b-name">機體 B</span>
+            </span>
+          </div>
+          <div id="compare-radar-wrap" class="w-full max-w-[300px]"></div>
+
+          <!-- 綜合戰力總分對比 -->
+          <div id="compare-score-banner" class="mt-3 w-full rounded-lg border border-slate-800 bg-slate-900/90 p-3 text-center"></div>
+        </div>
+
+        <!-- Unit B Card -->
+        <div id="compare-card-b" class="lg:col-span-4"></div>
+      </div>
+
+      <!-- 六維數據逐項 PK 條 -->
+      <div class="mt-8 rounded-xl border border-slate-800 bg-slate-950/60 p-4 sm:p-6">
+        <h3 class="mb-4 font-tech text-sm font-bold tracking-wider text-slate-300 uppercase">
+          PARAMETER HEAD-TO-HEAD // 六維性能逐項拆解
+        </h3>
+        <div id="compare-bars" class="space-y-4"></div>
+      </div>
+
+      <!-- 模擬交戰總評 -->
+      <div id="compare-verdict" class="mt-6 rounded-xl border border-amber-500/30 bg-gradient-to-r from-sky-950/40 via-slate-900/90 to-rose-950/40 p-5"></div>
+    </div>
+  </section>
+
+  <!-- 頁尾 -->
+  <footer class="border-t border-slate-800/80 bg-[#04070e] py-8 text-center text-xs text-slate-500">
+    <div class="mx-auto max-w-7xl px-4">
+      <p class="font-tech tracking-wider text-slate-400">STEEL MECHA SQUADRON // 鋼鐵機甲戰隊戰術資料庫</p>
+      <p class="mt-2">模型展示圖源採自官方鋼普拉展示規格資料（僅供同好交流與前端作品集展示用途）。</p>
+    </div>
+  </footer>
+
+  <!-- 單機戰力分析與評估 Modal -->
+  <div id="detail-modal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/80 p-4 backdrop-blur-sm">
+    <div class="relative max-h-[92vh] w-full max-w-4xl overflow-y-auto rounded-2xl border border-sky-500/40 bg-[#0b1220] p-5 shadow-2xl sm:p-7">
+      <button id="close-modal" class="sticky float-right top-0 z-10 flex h-9 w-9 items-center justify-center rounded-full border border-slate-700 bg-slate-900 text-slate-300 hover:border-rose-400 hover:text-rose-300 transition">
+        ✕
+      </button>
+      <div id="modal-body"></div>
+    </div>
+  </div>
+
+  <!-- 提示 Toast -->
+  <div id="toast" class="pointer-events-none fixed bottom-6 right-6 z-50 translate-y-4 opacity-0 rounded-xl border border-sky-400/50 bg-slate-900/95 px-4 py-3 text-sm font-bold text-sky-300 shadow-xl transition-all duration-300"></div>
+
+  <script>
+    // ==========================================
+    // 1. 陣營設定與機體資料庫 (三大陣營 / 12台經典模型)
+    // ==========================================
+    const FACTIONS = {
+      EFSF: {
+        id: 'EFSF',
+        name: '地球聯邦軍',
+        en: 'E.F.S.F.',
+        color: '#38bdf8',
+        badgeClass: 'bg-sky-500/20 text-sky-300 border-sky-400/40',
+        borderClass: 'border-sky-500/30',
+        doctrine: '重視光束武器標準化、機體泛用性與宇宙艦隊協同作戰，後期結合精神感應框架展現極高單機突破力。'
+      },
+      ZEON: {
+        id: 'ZEON',
+        name: '吉翁公國軍／新吉翁',
+        en: 'ZEON / NEO ZEON',
+        color: '#f43f5e',
+        badgeClass: 'bg-rose-500/20 text-rose-300 border-rose-400/40',
+        borderClass: 'border-rose-500/30',
+        doctrine: '開創機動戰士實戰先河，強調高推進出力、重型近戰與單機王牌特化，後期全面導入感應砲進行全方位攻擊。'
+      },
+      INDEP: {
+        id: 'INDEP',
+        name: '奧古／獨立武裝勢力',
+        en: 'A.E.U.G. / INDEPENDENT',
+        color: '#10b981',
+        badgeClass: 'bg-emerald-500/20 text-emerald-300 border-emerald-400/40',
+        borderClass: 'border-emerald-500/30',
+        doctrine: '集結跨時代頂尖技術，包含可變式飛行骨架、核能驅動龍騎兵、ZERO 預知系統與 GN 太陽爐，突破傳統陣營框架。'
+      }
+    };
+
+    const STAT_LABELS = [
+      { key: 'firepower', label: '火力輸出' },
+      { key: 'armor',     label: '裝甲防禦' },
+      { key: 'mobility',  label: '機動敏捷' },
+      { key: 'melee',     label: '近戰格鬥' },
+      { key: 'sensor',    label: '索敵偵測' },
+      { key: 'output',    label: '能源出力' }
+    ];
+
+    const MOBILE_SUITS = [
+      // --- 地球聯邦軍 ---
+      {
+        id: 'rx78-2',
+        code: 'RX-78-2',
+        name: 'RX-78-2 鋼彈 Ver.2.0',
+        faction: 'EFSF',
+        era: 'U.C. 0079',
+        series: '機動戰士鋼彈',
+        pilot: '阿姆羅・雷',
+        kit: 'RG 1/144 RX-78-2 Ver.2.0',
+        img: 'https://bandai-a.akamaihd.net/bc/img/model/xl/1000215609_12.jpg',
+        height: '18.0 m',
+        weight: '43.4 t (全備 60.0 t)',
+        generator: '1,380 kW',
+        armorMat: '月神鈦合金',
+        weapons: ['光束步槍', '光束軍刀 ×2', '超級火箭筒', '頭部60mm火神砲', '鋼彈護盾'],
+        stats: { firepower: 84, armor: 86, mobility: 82, melee: 85, sensor: 80, output: 78 },
+        role: '傳奇泛用原型機',
+        strengths: '搭載教育型電腦與學習數據迴路，具備劃時代的手持光束步槍火力與高剛性月神鈦裝甲。',
+        weaknesses: '一年戰爭初期推進器出力受限，面對後期新人類專用機體時機動力略顯不足。'
+      },
+      {
+        id: 'rx93-nu',
+        code: 'RX-93',
+        name: 'ν鋼彈 (Nu Gundam)',
+        faction: 'EFSF',
+        era: 'U.C. 0093',
+        series: '逆襲的夏亞',
+        pilot: '阿姆羅・雷',
+        kit: 'RG 1/144 ν鋼彈',
+        img: 'https://bandai-a.akamaihd.net/bc/img/model/xl/1000138247_6.jpg',
+        height: '22.0 m',
+        weight: '27.9 t (全備 63.0 t)',
+        generator: '2,980 kW',
+        armorMat: '鋼彈尼姆合金',
+        weapons: ['翼狀感應砲 ×6 (攻防一體)', '光束步槍', '新超級火箭筒', '大型光束軍刀'],
+        stats: { firepower: 94, armor: 88, mobility: 93, melee: 90, sensor: 96, output: 92 },
+        role: '新人類旗艦決戰機',
+        strengths: '首創具備獨立發電機的翼狀感應砲，不僅能全方位遠距狙擊，還可展開 I 力場形成光束防禦屏障。',
+        weaknesses: '精神感應框架潛力高度依賴駕駛員的新人類感知能力，普通駕駛難以發揮全數性能。'
+      },
+      {
+        id: 'rx0-unicorn',
+        code: 'RX-0',
+        name: '獨角獸鋼彈',
+        faction: 'EFSF',
+        era: 'U.C. 0096',
+        series: '機動戰士鋼彈 UC',
+        pilot: '巴納吉・林克斯',
+        kit: 'RG 1/144 獨角獸鋼彈',
+        img: 'https://bandai-a.akamaihd.net/bc/img/model/xl/1000117156_3.jpg',
+        height: '19.7 m / 21.7 m',
+        weight: '23.7 t (全備 42.7 t)',
+        generator: '3,480 kW (NT-D 覺醒未知)',
+        armorMat: '鋼彈尼姆合金',
+        weapons: ['光束麥格農 (Beam Magnum)', '光束拐棍 ×2', '超級火箭筒', 'I力場護盾'],
+        stats: { firepower: 96, armor: 91, mobility: 95, melee: 92, sensor: 97, output: 99 },
+        role: '反感應砲特化／奇蹟型 MS',
+        strengths: '全身內置全精神感應框架，啟動 NT-D 毀滅模式後可強行奪取敵方感應砲控制權，並擁有極限推力。',
+        weaknesses: 'NT-D 模式初期對駕駛員精神與肉體負荷極大，且光束麥格農彈匣數有限（每匣5發）。'
+      },
+      {
+        id: 'rgm79n-gm',
+        code: 'RGM-79N',
+        name: '吉姆・特裝型',
+        faction: 'EFSF',
+        era: 'U.C. 0083',
+        series: '0083 星塵作戰回憶錄',
+        pilot: '聯邦軍王牌駕駛員',
+        kit: 'HGUC 1/144 吉姆・特裝型',
+        img: 'https://bandai-hobby.net/images/158_754_s_zvgf0qilv7rt738k97b76dq0bg6f.jpg',
+        height: '18.0 m',
+        weight: '42.0 t (全備 57.6 t)',
+        generator: '1,420 kW',
+        armorMat: '鈦合金陶瓷複合裝甲',
+        weapons: ['吉姆專用步槍 (90mm)', '光束軍刀', '大型對彈護盾'],
+        stats: { firepower: 72, armor: 76, mobility: 83, melee: 75, sensor: 78, output: 74 },
+        role: '高級量產王牌機',
+        strengths: '沿用鋼彈 NT-1 技術開發，高機動性與極佳的操縱手感，是聯邦軍最可靠的部隊指揮用精銳機。',
+        weaknesses: '為控制量產成本未採用重型光束步槍，對戰艦或重裝甲目標的瞬間破防火力較弱。'
+      },
+
+      // --- 吉翁公國軍 / 新吉翁 ---
+      {
+        id: 'ms06s-zaku',
+        code: 'MS-06S',
+        name: '夏亞專用薩克 II',
+        faction: 'ZEON',
+        era: 'U.C. 0079',
+        series: '機動戰士鋼彈',
+        pilot: '夏亞・阿茲納布爾',
+        kit: 'RG 1/144 夏亞專用薩克 II',
+        img: 'https://bandai-hobby.net/images/156_3175_s_ixj8f208gjmr7lxf4olu9z0jot9q.jpg',
+        height: '17.5 m',
+        weight: '56.2 t (全備 74.5 t)',
+        generator: '976 kW',
+        armorMat: '超高張力鋼',
+        weapons: ['120mm 薩克機槍', '280mm 薩克火箭筒', '電熱斧 (Heat Hawk)'],
+        stats: { firepower: 74, armor: 75, mobility: 89, melee: 82, sensor: 77, output: 73 },
+        role: '高機動指揮官突擊機',
+        strengths: '將推力限制解除並強化姿勢控制噴嘴，實戰展現「三倍速」般的極高突擊機動性與近身纏鬥能力。',
+        weaknesses: '無內建光束兵器對應電容，裝甲抗光束能力遠低於聯邦 RX 系列。'
+      },
+      {
+        id: 'ms07b-gouf',
+        code: 'MS-07B',
+        name: '古夫 (Gouf)',
+        faction: 'ZEON',
+        era: 'U.C. 0079',
+        series: '機動戰士鋼彈',
+        pilot: '蘭巴・拉爾',
+        kit: 'HGUC 1/144 古夫 (REVIVE)',
+        img: 'https://bandai-a.akamaihd.net/bc/img/model/xl/1000103888_4.jpg',
+        height: '18.2 m',
+        weight: '58.5 t (全備 75.5 t)',
+        generator: '1,034 kW',
+        armorMat: '超高張力鋼',
+        weapons: ['五連裝75mm手指機砲', '電熱鞭 (Heat Rod)', '電熱軍刀', '大型盾牌'],
+        stats: { firepower: 76, armor: 82, mobility: 78, melee: 90, sensor: 74, output: 75 },
+        role: '陸戰近接格鬥專精機',
+        strengths: '「與薩克完全不同！」配備高壓電流電熱鞭與專用電熱劍，陸戰近距離格鬥壓制力極強。',
+        weaknesses: '缺乏遠距離長射程火力與宇宙空間適應性，在開闊空戰環境容易遭到遠距離風箏。'
+      },
+      {
+        id: 'msn04-sazabi',
+        code: 'MSN-04',
+        name: '沙薩比 (Sazabi)',
+        faction: 'ZEON',
+        era: 'U.C. 0093',
+        series: '逆襲的夏亞',
+        pilot: '夏亞・阿茲納布爾',
+        kit: 'RG 1/144 沙薩比',
+        img: 'https://bandai-a.akamaihd.net/bc/img/model/xl/1000128159_1.jpg',
+        height: '25.6 m',
+        weight: '30.5 t (全備 71.2 t)',
+        generator: '3,960 kW',
+        armorMat: '鋼彈尼姆合金',
+        weapons: ['感應砲 ×6', '腹部擴散米加粒子砲', '光束散彈步槍', '大型光束戰斧'],
+        stats: { firepower: 95, armor: 94, mobility: 89, melee: 93, sensor: 92, output: 95 },
+        role: '重裝甲新人類總帥機',
+        strengths: '集結吉翁系技術巔峰：超大出力米加粒子砲、感應砲與重裝甲兼顧超高機動推力，近遠皆無死角。',
+        weaknesses: '機體體型高達 25.6 公尺，中彈面積較一般 MS 更大，對燃料推進劑消耗亦相對驚人。'
+      },
+      {
+        id: 'msn06s-sinanju',
+        code: 'MSN-06S',
+        name: '新安州 (Sinanju)',
+        faction: 'ZEON',
+        era: 'U.C. 0096',
+        series: '機動戰士鋼彈 UC',
+        pilot: '弗爾・弗朗托',
+        kit: 'RG 1/144 新安州',
+        img: 'https://bandai-a.akamaihd.net/bc/img/model/xl/1000106344_1.jpg',
+        height: '22.6 m',
+        weight: '25.2 t (全備 56.9 t)',
+        generator: '3,240 kW',
+        armorMat: '鋼彈尼姆合金',
+        weapons: ['專用光束步槍 (可掛載火箭筒)', '光束戰斧 ×2', '光束軍刀', '大型護盾'],
+        stats: { firepower: 90, armor: 87, mobility: 97, melee: 94, sensor: 91, output: 91 },
+        role: '超高速突擊指揮官機',
+        strengths: '背部翼型推進器賦予超越常規的極限加減速與空間機動性，白兵戰與高速閃避能力堪稱一絕。',
+        weaknesses: '沒有搭載無線感應砲等遠距浮游兵器，面對全領域彈幕覆蓋時完全仰賴駕駛員技巧閃避。'
+      },
+
+      // --- 奧古 / 獨立勢力 ---
+      {
+        id: 'msz006-zeta',
+        code: 'MSZ-006',
+        name: 'Z鋼彈 (Zeta Gundam)',
+        faction: 'INDEP',
+        era: 'U.C. 0087',
+        series: '機動戰士 Z 鋼彈',
+        pilot: '卡密兒・維丹',
+        kit: 'RG 1/144 Z鋼彈',
+        img: 'https://bandai-hobby.net/images/158_3863_s_x3z4u7i8elehoyatdu9odnfxmvdp.jpg',
+        height: '19.85 m',
+        weight: '28.7 t (全備 62.3 t)',
+        generator: '2,020 kW',
+        armorMat: '鋼彈尼姆合金',
+        weapons: ['超絕米加粒子砲', '光束步槍', '腕部榴彈發射器', '光束軍刀 ×2'],
+        stats: { firepower: 89, armor: 80, mobility: 92, melee: 88, sensor: 87, output: 86 },
+        role: '可變式高速突擊機',
+        strengths: '可變形為穿波機 (Wave Rider) 單機突入大氣層，配備超絕米加粒子砲與生物感測器，突破力極強。',
+        weaknesses: '複雜的可變機構導致機體結構剛性略低，維修保養成本較高。'
+      },
+      {
+        id: 'zgmf-x20a',
+        code: 'ZGMF-X20A',
+        name: '攻擊自由鋼彈',
+        faction: 'INDEP',
+        era: 'C.E. 73',
+        series: '鋼彈 SEED DESTINY',
+        pilot: '煌・大和',
+        kit: 'RG 1/144 攻擊自由鋼彈',
+        img: 'https://bandai-a.akamaihd.net/bc/img/model/xl/1000084970_11.jpg',
+        height: '18.88 m',
+        weight: '80.09 t',
+        generator: '核動力超絕重氫引擎',
+        armorMat: 'VPS 變相轉移裝甲',
+        weapons: ['超級龍騎兵 ×8', '高出力光束步槍 ×2', '腹部複相光束砲', '磁軌砲 ×2', '光束盾'],
+        stats: { firepower: 98, armor: 86, mobility: 96, melee: 89, sensor: 94, output: 97 },
+        role: '一騎當千全火力壓制機',
+        strengths: '核能引擎提供近乎無限的能源，可同時進行多重目標鎖定與全彈發射，配備「光之翼」極速推進。',
+        weaknesses: '為追求極限可動與減重而將裝甲分割露出金色骨架，極端高能量衝擊下防禦容錯率略低。'
+      },
+      {
+        id: 'xxxg-00w0',
+        code: 'XXXG-00W0',
+        name: '飛翼鋼彈零式 EW',
+        faction: 'INDEP',
+        era: 'A.C. 195',
+        series: '新機動戰記鋼彈 W EW',
+        pilot: '希洛・唯',
+        kit: 'RG 1/144 飛翼鋼彈零式 EW',
+        img: 'https://bandai-a.akamaihd.net/bc/img/model/xl/1000094962_4.jpg',
+        height: '16.7 m',
+        weight: '8.0 t',
+        generator: '3,732 kW',
+        armorMat: '鋼彈尼姆合金',
+        weapons: ['雙重破壞來福槍 (Twin Buster Rifle)', '光束軍刀 ×2', '機關加農砲 ×2'],
+        stats: { firepower: 99, armor: 89, mobility: 94, melee: 85, sensor: 98, output: 93 },
+        role: '戰略級遠程殲滅機',
+        strengths: '雙重破壞來福槍具備一擊摧毀太空殖民地的毀滅火力，ZERO 系統可直接將未來戰況預測傳導給駕駛員。',
+        weaknesses: 'ZERO 系統的精神演算極度危險，非意志堅定者容易陷入暴走與幻覺。'
+      },
+      {
+        id: 'gn-001',
+        code: 'GN-001',
+        name: '能天使鋼彈 (Exia)',
+        faction: 'INDEP',
+        era: 'A.D. 2307',
+        series: '機動戰士鋼彈 00',
+        pilot: '剎那・F・清英',
+        kit: 'RG 1/144 能天使鋼彈',
+        img: 'https://bandai-a.akamaihd.net/bc/img/model/xl/1000087927_5.jpg',
+        height: '18.3 m',
+        weight: '57.2 t',
+        generator: 'GN-Drive 太陽爐',
+        armorMat: 'E-Carbon 碳纖維裝甲',
+        weapons: ['GN 劍 (Seven Sword 七劍系統)', 'GN 光束軍刀 ×2', 'GN 短劍/長劍', 'GN 護盾'],
+        stats: { firepower: 79, armor: 84, mobility: 95, melee: 99, sensor: 88, output: 94 },
+        role: '反鋼彈專用極限近戰機',
+        strengths: 'GN 太陽爐賦予半永久動力與干擾雷達特性，啟動 Trans-Am 系統後能以三倍速度展開壓倒性七劍斬擊。',
+        weaknesses: '武裝高度特化於近距離白兵戰，超遠距離砲戰與對艦火力相對薄弱。'
+      }
+    ];
+
+    // 計算綜合戰力
+    function calcOverall(stats) {
+      const vals = Object.values(stats);
+      return Math.round((vals.reduce((a, b) => a + b, 0) / vals.length) * 10) / 10;
+    }
+
+    function getRankBadge(score) {
+      if (score >= 93) return { rank: 'S+', cls: 'bg-amber-500/20 text-amber-300 border-amber-400/50' };
+      if (score >= 89) return { rank: 'S',  cls: 'bg-fuchsia-500/20 text-fuchsia-300 border-fuchsia-400/50' };
+      if (score >= 83) return { rank: 'A+', cls: 'bg-sky-500/20 text-sky-300 border-sky-400/50' };
+      return { rank: 'A', cls: 'bg-slate-700/60 text-slate-300 border-slate-500/50' };
+    }
+
+    // 破圖自動降級 SVG 示意圖 (確保 GitHub Pages 任何環境都能優雅呈現)
+    function handleImgError(imgEl, code, name) {
+      const svg = `
+        <svg xmlns="http://www.w3.org/2000/svg" width="400" height="300" viewBox="0 0 400 300">
+          <rect width="400" height="300" fill="#0f172a"/>
+          <path d="M0 30h400M0 90h400M0 150h400M0 210h400M0 270h400M50 0v300M150 0v300M250 0v300M350 0v300" stroke="#1e293b" stroke-width="1"/>
+          <polygon points="200,55 245,105 235,190 165,190 155,105" fill="none" stroke="#38bdf8" stroke-width="2" opacity="0.7"/>
+          <polygon points="155,105 110,135 130,175 165,145" fill="none" stroke="#38bdf8" stroke-width="1.5" opacity="0.5"/>
+          <polygon points="245,105 290,135 270,175 235,145" fill="none" stroke="#38bdf8" stroke-width="1.5" opacity="0.5"/>
+          <text x="200" y="230" fill="#38bdf8" font-family="monospace" font-size="18" font-weight="bold" text-anchor="middle">${code}</text>
+          <text x="200" y="255" fill="#94a3b8" font-family="sans-serif" font-size="13" text-anchor="middle">${name}</text>
+        </svg>`;
+      imgEl.onerror = null;
+      imgEl.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg);
+    }
+
+    // ==========================================
+    // 2. SVG 六維戰力雷達圖產生器 (支援單機與雙機對比)
+    // ==========================================
+    function createRadarSVG(statsA, colorA = '#38bdf8', statsB = null, colorB = '#f43f5e') {
+      const size = 280;
+      const cx = size / 2;
+      const cy = size / 2;
+      const maxR = 92;
+      const axes = STAT_LABELS;
+      const angleStep = (Math.PI * 2) / axes.length;
+
+      const getPoint = (index, val) => {
+        const angle = -Math.PI / 2 + index * angleStep;
+        const r = (val / 100) * maxR;
+        return [cx + r * Math.cos(angle), cy + r * Math.sin(angle)];
+      };
+
+      // 背景六角網格 (20, 40, 60, 80, 100)
+      let gridHtml = '';
+      [20, 40, 60, 80, 100].forEach(level => {
+        const pts = axes.map((_, i) => getPoint(i, level).join(',')).join(' ');
+        gridHtml += `<polygon points="${pts}" fill="none" stroke="rgba(148,163,184,0.2)" stroke-width="1"/>`;
+      });
+
+      // 軸線與標籤
+      let axisHtml = '';
+      axes.forEach((ax, i) => {
+        const [x, y] = getPoint(i, 100);
+        const [lx, ly] = getPoint(i, 122);
+        axisHtml += `<line x1="${cx}" y1="${cy}" x2="${x}" y2="${y}" stroke="rgba(148,163,184,0.25)" stroke-width="1"/>`;
+        axisHtml += `<text x="${lx}" y="${ly + 4}" fill="#cbd5e1" font-size="11" font-weight="700" text-anchor="middle">${ax.label}</text>`;
+      });
+
+      // 多邊形 A
+      const ptsA = axes.map((ax, i) => getPoint(i, statsA[ax.key]).join(',')).join(' ');
+      const polyA = `<polygon points="${ptsA}" fill="${colorA}" fill-opacity="0.28" stroke="${colorA}" stroke-width="2.2"/>`;
+      const dotsA = axes.map((ax, i) => {
+        const [px, py] = getPoint(i, statsA[ax.key]);
+        return `<circle cx="${px}" cy="${py}" r="3.5" fill="${colorA}"/>`;
+      }).join('');
+
+      // 多邊形 B (若為二二比較模式)
+      let polyB = '';
+      let dotsB = '';
+      if (statsB) {
+        const ptsB = axes.map((ax, i) => getPoint(i, statsB[ax.key]).join(',')).join(' ');
+        polyB = `<polygon points="${ptsB}" fill="${colorB}" fill-opacity="0.25" stroke="${colorB}" stroke-width="2.2" stroke-dasharray="4 2"/>`;
+        dotsB = axes.map((ax, i) => {
+          const [px, py] = getPoint(i, statsB[ax.key]);
+          return `<circle cx="${px}" cy="${py}" r="3.5" fill="${colorB}"/>`;
+        }).join('');
+      }
+
+      return `
+        <svg viewBox="0 0 ${size} ${size}" class="w-full h-auto select-none">
+          ${gridHtml}
+          ${axisHtml}
+          ${polyA}
+          ${polyB}
+          ${dotsA}
+          ${dotsB}
+        </svg>`;
+    }
+
+    // ==========================================
+    // 3. 狀態管理與渲染：機體圖鑑
+    // ==========================================
+    let currentFaction = 'ALL';
+    let searchQuery = '';
+    let sortMode = 'default';
+    let compareUnitA = 'rx93-nu';
+    let compareUnitB = 'msn04-sazabi';
+
+    function showToast(msg) {
+      const toast = document.getElementById('toast');
+      toast.textContent = msg;
+      toast.classList.remove('opacity-0', 'translate-y-4');
+      clearTimeout(window._toastTimer);
+      window._toastTimer = setTimeout(() => {
+        toast.classList.add('opacity-0', 'translate-y-4');
+      }, 2400);
+    }
+
+    function filterByFaction(factionId) {
+      currentFaction = factionId;
+      document.querySelectorAll('.faction-tab').forEach(btn => {
+        const isActive = btn.dataset.faction === factionId;
+        btn.className = isActive
+          ? 'faction-tab active rounded-lg border border-sky-400 bg-sky-500/20 px-4 py-2 text-sm font-bold text-sky-300 transition'
+          : 'faction-tab rounded-lg border border-slate-700 bg-slate-900/80 px-4 py-2 text-sm font-bold text-slate-300 hover:border-sky-400/60 hover:text-sky-300 transition';
+      });
+      renderGrid();
+      document.getElementById('roster').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
+    function renderGrid() {
+      const grid = document.getElementById('ms-grid');
+      let list = MOBILE_SUITS.filter(ms => {
+        const matchFaction = currentFaction === 'ALL' || ms.faction === currentFaction;
+        const q = searchQuery.trim().toLowerCase();
+        const matchQuery = !q ||
+          ms.name.toLowerCase().includes(q) ||
+          ms.code.toLowerCase().includes(q) ||
+          ms.pilot.toLowerCase().includes(q) ||
+          ms.series.toLowerCase().includes(q);
+        return matchFaction && matchQuery;
+      });
+
+      if (sortMode === 'overall') {
+        list.sort((a, b) => calcOverall(b.stats) - calcOverall(a.stats));
+      } else if (sortMode !== 'default') {
+        list.sort((a, b) => b.stats[sortMode] - a.stats[sortMode]);
+      }
+
+      if (list.length === 0) {
+        grid.innerHTML = `<div class="col-span-full rounded-xl border border-slate-800 bg-slate-900/60 p-10 text-center text-slate-400">查無符合條件的機體資料，請嘗試調整搜尋關鍵字或陣營篩選。</div>`;
+        return;
+      }
+
+      grid.innerHTML = list.map(ms => {
+        const faction = FACTIONS[ms.faction];
+        const overall = calcOverall(ms.stats);
+        const rankObj = getRankBadge(overall);
+        return `
+          <article class="hud-card flex flex-col overflow-hidden rounded-2xl">
+            <!-- 模型展示區 -->
+            <div class="relative model-stage h-52 w-full overflow-hidden p-3 flex items-center justify-center">
+              <img src="${ms.img}" alt="${ms.name}" referrerpolicy="no-referrer"
+                onerror="handleImgError(this, '${ms.code}', '${ms.name}')"
+                class="h-full w-full object-contain drop-shadow-md transition-transform duration-300 hover:scale-105" />
+              <span class="absolute left-3 top-3 rounded border px-2 py-0.5 text-[11px] font-bold backdrop-blur-md bg-slate-950/85 ${faction.badgeClass}">
+                ${faction.name}
+              </span>
+              <span class="absolute right-3 top-3 rounded border px-2 py-0.5 font-tech text-xs font-black backdrop-blur-md bg-slate-950/85 ${rankObj.cls}">
+                ${rankObj.rank} // ${overall}
+              </span>
+              <span class="absolute bottom-2 right-2 rounded bg-slate-900/80 px-2 py-0.5 font-tech text-[10px] font-medium text-slate-200">
+                ${ms.kit}
+              </span>
+            </div>
+
+            <!-- 機體資訊區 -->
+            <div class="flex flex-1 flex-col p-4">
+              <div class="flex items-center justify-between text-xs text-slate-400">
+                <span class="font-tech font-bold text-sky-400">${ms.code}</span>
+                <span>${ms.era}</span>
+              </div>
+              <h3 class="mt-1 text-lg font-black text-white">${ms.name}</h3>
+              <p class="mt-0.5 text-xs text-slate-400">駕駛員：<span class="text-slate-200 font-medium">${ms.pilot}</span></p>
+
+              <!-- 精簡戰力條 -->
+              <div class="mt-3 grid grid-cols-3 gap-2 rounded-lg border border-slate-800 bg-slate-950/60 p-2.5 text-center">
+                <div>
+                  <div class="text-[10px] text-slate-400">火力</div>
+                  <div class="font-tech text-sm font-bold text-amber-300">${ms.stats.firepower}</div>
+                </div>
+                <div>
+                  <div class="text-[10px] text-slate-400">裝甲</div>
+                  <div class="font-tech text-sm font-bold text-emerald-300">${ms.stats.armor}</div>
+                </div>
+                <div>
+                  <div class="text-[10px] text-slate-400">機動</div>
+                  <div class="font-tech text-sm font-bold text-sky-300">${ms.stats.mobility}</div>
+                </div>
+              </div>
+
+              <!-- 操作按鈕 -->
+              <div class="mt-4 grid grid-cols-2 gap-2 pt-2 border-t border-slate-800/80">
+                <button onclick="openDetailModal('${ms.id}')" class="rounded-lg border border-sky-500/40 bg-sky-500/10 py-2 text-xs font-bold text-sky-300 hover:bg-sky-500/20 transition">
+                  📊 戰力評估
+                </button>
+                <div class="grid grid-cols-2 gap-1">
+                  <button onclick="setCompareUnit('A', '${ms.id}')" title="設為藍方 A" class="rounded-lg border border-slate-700 bg-slate-800/80 py-2 text-[11px] font-bold text-sky-300 hover:border-sky-400 transition">
+                    +藍A
+                  </button>
+                  <button onclick="setCompareUnit('B', '${ms.id}')" title="設為紅方 B" class="rounded-lg border border-slate-700 bg-slate-800/80 py-2 text-[11px] font-bold text-rose-300 hover:border-rose-400 transition">
+                    +紅B
+                  </button>
+                </div>
+              </div>
+            </div>
+          </article>`;
+      }).join('');
+    }
+
+    // ==========================================
+    // 4. 陣營整體戰力分析與評估
+    // ==========================================
+    function renderFactionAnalysis() {
+      const container = document.getElementById('faction-summary-grid');
+      container.innerHTML = Object.values(FACTIONS).map(f => {
+        const units = MOBILE_SUITS.filter(m => m.faction === f.id);
+        const avgStats = {};
+        STAT_LABELS.forEach(s => {
+          avgStats[s.key] = Math.round(units.reduce((sum, u) => sum + u.stats[s.key], 0) / units.length);
+        });
+        const avgOverall = calcOverall(avgStats);
+        const topUnit = [...units].sort((a, b) => calcOverall(b.stats) - calcOverall(a.stats))[0];
+
+        return `
+          <div class="hud-card rounded-2xl p-5 border ${f.borderClass}">
+            <div class="flex items-start justify-between">
+              <div>
+                <div class="font-tech text-xs font-bold tracking-wider" style="color:${f.color}">${f.en}</div>
+                <h3 class="mt-0.5 text-xl font-black text-white">${f.name}</h3>
+              </div>
+              <div class="text-right">
+                <div class="text-[10px] text-slate-400">陣營平均戰力</div>
+                <div class="font-tech text-2xl font-black" style="color:${f.color}">${avgOverall}</div>
+              </div>
+            </div>
+
+            <p class="mt-3 text-xs leading-relaxed text-slate-300">${f.doctrine}</p>
+
+            <div class="my-4 mx-auto max-w-[230px]">
+              ${createRadarSVG(avgStats, f.color)}
+            </div>
+
+            <div class="space-y-2 border-t border-slate-800 pt-3 text-xs">
+              <div class="flex justify-between">
+                <span class="text-slate-400">陣營旗艦王牌：</span>
+                <button onclick="openDetailModal('${topUnit.id}')" class="font-bold text-white hover:text-sky-400 underline decoration-dotted">
+                  ${topUnit.name} (${calcOverall(topUnit.stats)})
+                </button>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-slate-400">平均火力 / 裝甲 / 機動：</span>
+                <span class="font-tech font-bold text-slate-200">${avgStats.firepower} / ${avgStats.armor} / ${avgStats.mobility}</span>
+              </div>
+            </div>
+          </div>`;
+      }).join('');
+    }
+
+    // ==========================================
+    // 5. 單機戰力分析與評估 Modal
+    // ==========================================
+    function openDetailModal(id) {
+      const ms = MOBILE_SUITS.find(m => m.id === id);
+      if (!ms) return;
+      const faction = FACTIONS[ms.faction];
+      const overall = calcOverall(ms.stats);
+      const rankObj = getRankBadge(overall);
+
+      const body = document.getElementById('modal-body');
+      body.innerHTML = `
+        <div class="grid gap-6 md:grid-cols-12">
+          <!-- 左側模型與規格 -->
+          <div class="md:col-span-5">
+            <div class="model-stage rounded-xl p-4 flex items-center justify-center h-64 overflow-hidden">
+              <img src="${ms.img}" alt="${ms.name}" referrerpolicy="no-referrer"
+                onerror="handleImgError(this, '${ms.code}', '${ms.name}')"
+                class="h-full w-full object-contain" />
+            </div>
+            <div class="mt-4 rounded-xl border border-slate-800 bg-slate-950/70 p-4 text-xs space-y-2">
+              <div class="flex justify-between"><span class="text-slate-400">模型規格</span><span class="font-bold text-slate-200">${ms.kit}</span></div>
+              <div class="flex justify-between"><span class="text-slate-400">登場時代</span><span class="font-bold text-slate-200">${ms.era} / ${ms.series}</span></div>
+              <div class="flex justify-between"><span class="text-slate-400">全高</span><span class="font-tech text-slate-200">${ms.height}</span></div>
+              <div class="flex justify-between"><span class="text-slate-400">重量</span><span class="font-tech text-slate-200">${ms.weight}</span></div>
+              <div class="flex justify-between"><span class="text-slate-400">動力出力</span><span class="font-tech text-slate-200">${ms.generator}</span></div>
+              <div class="flex justify-between"><span class="text-slate-400">裝甲材質</span><span class="text-slate-200">${ms.armorMat}</span></div>
+            </div>
+          </div>
+
+          <!-- 右側戰力分析與評估 -->
+          <div class="md:col-span-7 flex flex-col justify-between">
+            <div>
+              <div class="flex flex-wrap items-center gap-2">
+                <span class="rounded border px-2.5 py-0.5 text-xs font-bold ${faction.badgeClass}">${faction.name}</span>
+                <span class="font-tech text-xs font-bold text-sky-400">${ms.code}</span>
+                <span class="ml-auto rounded border px-2.5 py-0.5 font-tech text-sm font-black ${rankObj.cls}">綜合戰力 ${rankObj.rank} (${overall})</span>
+              </div>
+              <h3 class="mt-2 text-2xl font-black text-white">${ms.name}</h3>
+              <p class="mt-1 text-sm text-slate-400">專屬駕駛：<span class="text-white font-bold">${ms.pilot}</span> ｜ 戰術定位：<span class="text-sky-300 font-bold">${ms.role}</span></p>
+
+              <!-- 雷達圖與數值條 -->
+              <div class="mt-4 grid items-center gap-4 sm:grid-cols-2 rounded-xl border border-slate-800 bg-slate-950/60 p-3">
+                <div class="mx-auto w-full max-w-[210px]">
+                  ${createRadarSVG(ms.stats, faction.color)}
+                </div>
+                <div class="space-y-2.5">
+                  ${STAT_LABELS.map(s => `
+                    <div>
+                      <div class="flex justify-between text-xs mb-1">
+                        <span class="text-slate-300">${s.label}</span>
+                        <span class="font-tech font-bold text-white">${ms.stats[s.key]}</span>
+                      </div>
+                      <div class="h-1.5 w-full rounded-full bg-slate-800 overflow-hidden">
+                        <div class="h-full rounded-full" style="width:${ms.stats[s.key]}%; background:${faction.color}"></div>
+                      </div>
+                    </div>
+                  `).join('')}
+                </div>
+              </div>
+
+              <!-- 主要武裝 -->
+              <div class="mt-4">
+                <div class="text-xs font-bold text-slate-400 mb-1.5">主要武裝配置</div>
+                <div class="flex flex-wrap gap-1.5">
+                  ${ms.weapons.map(w => `<span class="rounded-md border border-slate-700 bg-slate-800/80 px-2.5 py-1 text-xs text-slate-200">${w}</span>`).join('')}
+                </div>
+              </div>
+
+              <!-- 優劣勢評估 -->
+              <div class="mt-4 grid gap-3 sm:grid-cols-2">
+                <div class="rounded-xl border border-emerald-500/30 bg-emerald-950/20 p-3">
+                  <div class="text-xs font-bold text-emerald-400 mb-1">▲ 戰術優勢評估</div>
+                  <p class="text-xs leading-relaxed text-slate-300">${ms.strengths}</p>
+                </div>
+                <div class="rounded-xl border border-rose-500/30 bg-rose-950/20 p-3">
+                  <div class="text-xs font-bold text-rose-400 mb-1">▼ 潛在弱點分析</div>
+                  <p class="text-xs leading-relaxed text-slate-300">${ms.weaknesses}</p>
+                </div>
+              </div>
+            </div>
+
+            <div class="mt-5 flex flex-wrap gap-2 pt-3 border-t border-slate-800">
+              <button onclick="setCompareUnit('A', '${ms.id}'); closeDetailModal(); document.getElementById('compare-arena').scrollIntoView({behavior:'smooth'});"
+                class="flex-1 rounded-lg bg-sky-500/20 border border-sky-400/50 py-2.5 text-xs font-bold text-sky-300 hover:bg-sky-500/30 transition">
+                送入 1v1 藍方 (Unit A)
+              </button>
+              <button onclick="setCompareUnit('B', '${ms.id}'); closeDetailModal(); document.getElementById('compare-arena').scrollIntoView({behavior:'smooth'});"
+                class="flex-1 rounded-lg bg-rose-500/20 border border-rose-400/50 py-2.5 text-xs font-bold text-rose-300 hover:bg-rose-500/30 transition">
+                送入 1v1 紅方 (Unit B)
+              </button>
+            </div>
+          </div>
+        </div>`;
+
+      const modal = document.getElementById('detail-modal');
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+    }
+
+    function closeDetailModal() {
+      const modal = document.getElementById('detail-modal');
+      modal.classList.add('hidden');
+      modal.classList.remove('flex');
+    }
+
+    // ==========================================
+    // 6. 鋼彈間二二比較 (1v1 Comparison Engine)
+    // ==========================================
+    function populateCompareSelects() {
+      const selA = document.getElementById('compare-select-a');
+      const selB = document.getElementById('compare-select-b');
+
+      const buildOptions = () => Object.values(FACTIONS).map(f => {
+        const opts = MOBILE_SUITS.filter(m => m.faction === f.id)
+          .map(m => `<option value="${m.id}">[${m.code}] ${m.name} (${m.pilot})</option>`).join('');
+        return `<optgroup label="── ${f.name} ──">${opts}</optgroup>`;
+      }).join('');
+
+      const html = buildOptions();
+      selA.innerHTML = html;
+      selB.innerHTML = html;
+      selA.value = compareUnitA;
+      selB.value = compareUnitB;
+    }
+
+    function setCompareUnit(slot, id) {
+      if (slot === 'A') {
+        compareUnitA = id;
+        document.getElementById('compare-select-a').value = id;
+      } else {
+        compareUnitB = id;
+        document.getElementById('compare-select-b').value = id;
+      }
+      const ms = MOBILE_SUITS.find(m => m.id === id);
+      renderComparison();
+      showToast(`已將「${ms.name}」設定為對比 ${slot === 'A' ? '藍方 A' : '紅方 B'}`);
+    }
+
+    function renderMiniCompareCard(ms, side) {
+      const faction = FACTIONS[ms.faction];
+      const overall = calcOverall(ms.stats);
+      const isA = side === 'A';
+      const borderCol = isA ? 'border-sky-500/40' : 'border-rose-500/40';
+      const tagCol = isA ? 'text-sky-400' : 'text-rose-400';
+
+      return `
+        <div class="rounded-xl border ${borderCol} bg-slate-950/70 p-4 h-full flex flex-col justify-between">
+          <div>
+            <div class="flex items-center justify-between text-xs mb-2">
+              <span class="font-tech font-bold ${tagCol}">${isA ? 'UNIT A // 藍方' : 'UNIT B // 紅方'}</span>
+              <span class="rounded border px-2 py-0.5 text-[11px] font-bold ${faction.badgeClass}">${faction.name}</span>
+            </div>
+            <div class="model-stage h-44 w-full rounded-lg p-2 flex items-center justify-center overflow-hidden">
+              <img src="${ms.img}" alt="${ms.name}" referrerpolicy="no-referrer"
+                onerror="handleImgError(this, '${ms.code}', '${ms.name}')"
+                class="h-full w-full object-contain" />
+            </div>
+            <div class="mt-3">
+              <div class="font-tech text-xs text-slate-400">${ms.code} · ${ms.era}</div>
+              <h4 class="text-lg font-black text-white">${ms.name}</h4>
+              <div class="mt-1 text-xs text-slate-400">駕駛員：<span class="text-slate-200 font-bold">${ms.pilot}</span></div>
+              <div class="mt-1 text-xs text-slate-400">定位：<span class="text-slate-200">${ms.role}</span></div>
+            </div>
+          </div>
+          <div class="mt-4 flex items-center justify-between border-t border-slate-800 pt-3">
+            <span class="text-xs text-slate-400">綜合戰力評分</span>
+            <span class="font-tech text-2xl font-black ${tagCol}">${overall}</span>
+          </div>
+        </div>`;
+    }
+
+    function renderComparison() {
+      const unitA = MOBILE_SUITS.find(m => m.id === compareUnitA);
+      const unitB = MOBILE_SUITS.find(m => m.id === compareUnitB);
+      if (!unitA || !unitB) return;
+
+      document.getElementById('compare-card-a').innerHTML = renderMiniCompareCard(unitA, 'A');
+      document.getElementById('compare-card-b').innerHTML = renderMiniCompareCard(unitB, 'B');
+      document.getElementById('legend-a-name').textContent = unitA.code;
+      document.getElementById('legend-b-name').textContent = unitB.code;
+
+      // 雙層疊加雷達圖
+      document.getElementById('compare-radar-wrap').innerHTML =
+        createRadarSVG(unitA.stats, '#38bdf8', unitB.stats, '#f43f5e');
+
+      // 總分與勝率估算
+      const scoreA = calcOverall(unitA.stats);
+      const scoreB = calcOverall(unitB.stats);
+      const diff = Math.round((scoreA - scoreB) * 10) / 10;
+      const winProbA = Math.min(88, Math.max(12, Math.round(50 + diff * 2.4)));
+      const winProbB = 100 - winProbA;
+
+      let leadText = '勢均力敵（平分秋色）';
+      let leadColor = 'text-amber-300';
+      if (diff > 0.5) {
+        leadText = `${unitA.name} 綜合帳面領先 (+${diff})`;
+        leadColor = 'text-sky-400';
+      } else if (diff < -0.5) {
+        leadText = `${unitB.name} 綜合帳面領先 (+${Math.abs(diff)})`;
+        leadColor = 'text-rose-400';
+      }
+
+      document.getElementById('compare-score-banner').innerHTML = `
+        <div class="text-xs font-bold ${leadColor}">${leadText}</div>
+        <div class="mt-2 flex items-center justify-between text-[11px] font-tech">
+          <span class="text-sky-400">預測勝率 ${winProbA}%</span>
+          <span class="text-rose-400">${winProbB}% 預測勝率</span>
+        </div>
+        <div class="mt-1 flex h-2 w-full overflow-hidden rounded-full bg-slate-800">
+          <div class="bg-sky-400 transition-all duration-500" style="width:${winProbA}%"></div>
+          <div class="bg-rose-500 transition-all duration-500" style="width:${winProbB}%"></div>
+        </div>`;
+
+      // 六維數據逐項 PK 條
+      let winsA = 0, winsB = 0;
+      const advantageA = [], advantageB = [];
+
+      document.getElementById('compare-bars').innerHTML = STAT_LABELS.map(s => {
+        const valA = unitA.stats[s.key];
+        const valB = unitB.stats[s.key];
+        const delta = valA - valB;
+        let badge = `<span class="rounded bg-slate-800 px-2 py-0.5 text-[10px] text-slate-400">平手</span>`;
+        if (delta > 0) {
+          winsA++;
+          advantageA.push(s.label);
+          badge = `<span class="rounded bg-sky-500/20 px-2 py-0.5 font-tech text-[10px] font-bold text-sky-300">藍方 +${delta}</span>`;
+        } else if (delta < 0) {
+          winsB++;
+          advantageB.push(s.label);
+          badge = `<span class="rounded bg-rose-500/20 px-2 py-0.5 font-tech text-[10px] font-bold text-rose-300">紅方 +${Math.abs(delta)}</span>`;
+        }
+
+        return `
+          <div class="grid items-center gap-2 sm:grid-cols-12">
+            <div class="flex items-center justify-between sm:col-span-5 sm:justify-end sm:gap-3">
+              <span class="font-tech text-sm font-black ${delta > 0 ? 'text-sky-300' : 'text-slate-300'}">${valA}</span>
+              <div class="h-2.5 w-3/4 sm:w-full rounded-full bg-slate-800 flex justify-end overflow-hidden">
+                <div class="h-full rounded-full bg-gradient-to-l from-sky-400 to-sky-600 transition-all duration-500" style="width:${valA}%"></div>
+              </div>
+            </div>
+
+            <div class="flex flex-col items-center justify-center sm:col-span-2">
+              <span class="text-xs font-bold text-slate-200">${s.label}</span>
+              <div class="mt-0.5">${badge}</div>
+            </div>
+
+            <div class="flex items-center justify-between sm:col-span-5 sm:gap-3">
+              <div class="h-2.5 w-3/4 sm:w-full rounded-full bg-slate-800 overflow-hidden">
+                <div class="h-full rounded-full bg-gradient-to-r from-rose-400 to-rose-600 transition-all duration-500" style="width:${valB}%"></div>
+              </div>
+              <span class="font-tech text-sm font-black ${delta < 0 ? 'text-rose-300' : 'text-slate-300'}">${valB}</span>
+            </div>
+          </div>`;
+      }).join('');
+
+      // 動態產出模擬交戰評估報告
+      let verdictMsg = '';
+      if (unitA.id === unitB.id) {
+        verdictMsg = `兩側皆選定為 <strong class="text-white">${unitA.name}</strong>，屬於同型機鏡像對決，勝負將 100% 取決於駕駛員的實戰臨場判斷與地形利用。`;
+      } else {
+        const advTextA = advantageA.length ? `在「${advantageA.join('、')}」佔據優勢` : '各項數值暫未壓過對手';
+        const advTextB = advantageB.length ? `在「${advantageB.join('、')}」具備領先` : '各項數值暫未壓過對手';
+        const tacticalWinner = winProbA > winProbB ? unitA : (winProbB > winProbA ? unitB : null);
+        const winSummary = tacticalWinner
+          ? `綜合演算顯示 <strong class="text-amber-300">${tacticalWinner.name}</strong> 擁有較高的模擬勝率（${Math.max(winProbA, winProbB)}%），建議利用本身優勢領域主導交戰距離。`
+          : `雙方整體性能極為接近，屬於旗鼓相當的經典宿命對決！`;
+
+        verdictMsg = `
+          <ul class="space-y-1.5 text-xs sm:text-sm text-slate-300 leading-relaxed">
+            <li>• <strong class="text-sky-400">${unitA.name}</strong>（${winsA} 項指標領先）：${advTextA}。建議戰術：發揮「${unitA.role}」特性進行切入。</li>
+            <li>• <strong class="text-rose-400">${unitB.name}</strong>（${winsB} 項指標領先）：${advTextB}。建議戰術：發揮「${unitB.role}」特性進行反制。</li>
+            <li class="pt-1 text-slate-100">▶ <strong>模擬交戰結論：</strong>${winSummary}</li>
+          </ul>`;
+      }
+
+      document.getElementById('compare-verdict').innerHTML = `
+        <div class="mb-2 flex items-center gap-2 font-tech text-xs font-bold tracking-wider text-amber-400 uppercase">
+          <span>⚡ TACTICAL SIMULATION VERDICT // 模擬交戰評估報告</span>
+        </div>
+        ${verdictMsg}`;
+    }
+
+    // ==========================================
+    // 7. 事件綁定與初始化
+    // ==========================================
+    document.addEventListener('DOMContentLoaded', () => {
+      // 陣營按鈕
+      document.querySelectorAll('.faction-tab').forEach(btn => {
+        btn.addEventListener('click', () => filterByFaction(btn.dataset.faction));
+      });
+
+      // 搜尋與排序
+      document.getElementById('search-input').addEventListener('input', e => {
+        searchQuery = e.target.value;
+        renderGrid();
+      });
+      document.getElementById('sort-select').addEventListener('change', e => {
+        sortMode = e.target.value;
+        renderGrid();
+      });
+
+      // 二二比較控制
+      populateCompareSelects();
+      document.getElementById('compare-select-a').addEventListener('change', e => {
+        compareUnitA = e.target.value;
+        renderComparison();
+      });
+      document.getElementById('compare-select-b').addEventListener('change', e => {
+        compareUnitB = e.target.value;
+        renderComparison();
+      });
+      document.getElementById('btn-swap-units').addEventListener('click', () => {
+        [compareUnitA, compareUnitB] = [compareUnitB, compareUnitA];
+        document.getElementById('compare-select-a').value = compareUnitA;
+        document.getElementById('compare-select-b').value = compareUnitB;
+        renderComparison();
+      });
+      document.getElementById('btn-random-duel').addEventListener('click', () => {
+        const idxA = Math.floor(Math.random() * MOBILE_SUITS.length);
+        let idxB = Math.floor(Math.random() * MOBILE_SUITS.length);
+        while (idxB === idxA) idxB = Math.floor(Math.random() * MOBILE_SUITS.length);
+        compareUnitA = MOBILE_SUITS[idxA].id;
+        compareUnitB = MOBILE_SUITS[idxB].id;
+        document.getElementById('compare-select-a').value = compareUnitA;
+        document.getElementById('compare-select-b').value = compareUnitB;
+        renderComparison();
+        showToast('已隨機配對宿命對決機體！');
+      });
+
+      // Modal 關閉
+      document.getElementById('close-modal').addEventListener('click', closeDetailModal);
+      document.getElementById('detail-modal').addEventListener('click', e => {
+        if (e.target.id === 'detail-modal') closeDetailModal();
+      });
+      document.addEventListener('keydown', e => {
+        if (e.key === 'Escape') closeDetailModal();
+      });
+
+      // 初始渲染
+      renderGrid();
+      renderFactionAnalysis();
+      renderComparison();
+    });
+  </script>
+</body>
+</html>
